@@ -1,15 +1,24 @@
-const scoresUrl = 'https://raw.githubusercontent.com/ndennehySHS/LeaderBoardY13/main/scores.json';
+// Initialize Firebase
+const firebaseConfig = {
+  apiKey: "AIzaSyDsgKxwXO7KRGOKslKgWGEhh9Tfdg8owm4",
+  authDomain: "leaderboardy13.firebaseapp.com",
+  databaseURL: "https://leaderboardy13-default-rtdb.firebaseio.com",
+  projectId: "leaderboardy13",
+  storageBucket: "leaderboardy13.appspot.com",
+  messagingSenderId: "292922184528",
+  appId: "1:292922184528:web:486c5e1195d61e52d9d255"
+};
+firebase.initializeApp(firebaseConfig);
+
+const dbRef = firebase.database().ref('scores');
 
 let scores = [];
 
 function fetchScores() {
-  fetch(scoresUrl)
-    .then(response => response.json())
-    .then(data => {
-      scores = data;
-      updateLeaderboard();
-    })
-    .catch(error => console.error('Error fetching scores:', error));
+  dbRef.on('value', (snapshot) => {
+    scores = snapshot.val() || [];
+    updateLeaderboard();
+  });
 }
 
 function updateLeaderboard() {
@@ -30,25 +39,11 @@ document.getElementById('go-button').addEventListener('click', () => {
     const playerIndex = scores.findIndex(s => s.name === player);
     if (playerIndex !== -1) {
       scores[playerIndex].score += score;
-      updateLeaderboard();
-      saveScores();
+      dbRef.set(scores);
     }
   }
 });
 
 document.getElementById('refresh-button').addEventListener('click', fetchScores);
-
-function saveScores() {
-  fetch(scoresUrl, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(scores)
-  })
-  .then(response => response.json())
-  .then(data => console.log('Scores saved:', data))
-  .catch(error => console.error('Error saving scores:', error));
-}
 
 fetchScores();
