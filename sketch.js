@@ -1,20 +1,16 @@
-let scores = [
-  { name: 'Finlay', score: 0 },
-  { name: 'Avery', score: 0 },
-  { name: 'Ocean', score: 0 },
-  { name: 'Ella', score: 0 },
-  { name: 'Iyiola', score: 0 },
-  { name: 'Tom', score: 0 },
-  { name: 'Oliver', score: 0 },
-  { name: 'Daniel', score: 0 },
-  { name: 'Archie', score: 0 },
-  { name: 'Gabriel', score: 0 },
-  { name: 'Casey', score: 0 },
-  { name: 'Owen', score: 0 },
-  { name: 'Michell', score: 0 },
-  { name: 'Morgan', score: 0 },
-  { name: 'Jack', score: 0 }
-];
+const scoresUrl = 'https://raw.githubusercontent.com/ndennehySHS/LeaderBoardY13/main/scores.json';
+
+let scores = [];
+
+function fetchScores() {
+  fetch(scoresUrl)
+    .then(response => response.json())
+    .then(data => {
+      scores = data;
+      updateLeaderboard();
+    })
+    .catch(error => console.error('Error fetching scores:', error));
+}
 
 function updateLeaderboard() {
   scores.sort((a, b) => b.score - a.score);
@@ -35,10 +31,24 @@ document.getElementById('go-button').addEventListener('click', () => {
     if (playerIndex !== -1) {
       scores[playerIndex].score += score;
       updateLeaderboard();
+      saveScores();
     }
   }
 });
 
-document.getElementById('refresh-button').addEventListener('click', updateLeaderboard);
+document.getElementById('refresh-button').addEventListener('click', fetchScores);
 
-updateLeaderboard();
+function saveScores() {
+  fetch(scoresUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(scores)
+  })
+  .then(response => response.json())
+  .then(data => console.log('Scores saved:', data))
+  .catch(error => console.error('Error saving scores:', error));
+}
+
+fetchScores();
